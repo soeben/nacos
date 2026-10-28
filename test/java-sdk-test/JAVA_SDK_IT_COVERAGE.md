@@ -38,6 +38,20 @@ HTTP API IT CI and should build this module without executing SDK IT cases.
 Destructive restart and cluster cases run through
 [`../DEFAULT_AUTH_RELIABILITY_IT.md`](../DEFAULT_AUTH_RELIABILITY_IT.md).
 
+## Naming notification origin (#15902)
+
+The `NamingService` listener contract includes read-only `NamingEvent.isFromServer()`
+metadata inherited by `NamingChangeEvent`. `NamingServiceJavaSdkITCase`
+`testCacheReplayAndServerPushNotificationOrigins` covers an existing service's initial
+view, cache replay to a second listener without replaying to the first, server-push
+weight updates delivered to both listeners, and unsubscribe/resubscribe cache replay.
+Polling and startup disk-cache loading are disabled explicitly for this source check.
+
+Subscription-response/push ordering is covered deterministically in client unit tests,
+because either can win the initial diff in standalone IT. API/client tests also cover
+legacy defaults, selector propagation, unchanged-view suppression and non-push paths.
+The scenario matrix is in `JAVA_SDK_IT_SCENARIOS.md`; no HTTP API or wire contract changes.
+
 ## JSON Runtime Dependency Isolation (#15788)
 
 The `jackson3-sdk-test` profile verifies Jackson 2/3 coexistence and explicit

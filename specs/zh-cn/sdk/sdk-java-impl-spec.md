@@ -155,6 +155,12 @@ context，而不是修改请求 payload 或让无关 SDK 调用失败。默认 N
 
 `getServicesOfServer` 的 selector overload 已废弃，仅作为兼容面保留。
 
+Naming 监听事件提供只读 `NamingEvent.isFromServer()` 标记，由 `NamingChangeEvent` 继承。
+只有服务端主动推送产生的通知为 `true`；订阅响应、缓存重放、轮询和 failover 通知为 `false`。
+旧构造器继续保留并默认 `false`；新增构造器重载将标记经过事件链路和 selector 转换传递。
+标记属于事件，不表示首次回调，也不保证事件可以跳过。完整边界和重连规则见
+[Naming 发现与订阅规范](../naming/naming-discovery-subscription-spec.md)。
+
 ### 5.3 AiService 资源子接口
 
 根接口还提供 default `getAgentDiscoveryCapability() throws NacosException`，返回已有

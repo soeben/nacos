@@ -23,6 +23,7 @@ import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.FuzzyWatchEventWatcher;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.api.selector.AbstractSelector;
@@ -55,6 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.alibaba.nacos.client.naming.selector.NamingSelectorFactory.getUniqueClusterString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -1040,7 +1042,10 @@ class NacosNamingServiceTest {
         when(serviceInfoHolder.getServiceInfo(serviceName, Constants.DEFAULT_GROUP))
             .thenReturn(serviceInfo);
         final AtomicBoolean flag = new AtomicBoolean(false);
-        client.subscribe(serviceName, event -> flag.set(true));
+        client.subscribe(serviceName, event -> {
+            assertFalse(((NamingEvent) event).isFromServer());
+            flag.set(true);
+        });
         assertTrue(flag.get());
     }
     

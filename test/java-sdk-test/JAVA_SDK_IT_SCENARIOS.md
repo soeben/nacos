@@ -107,6 +107,17 @@ main interface coverage denominators.
 | Fuzzy watch APIs | Fixed group pattern, service+group pattern, matched service keys, event callback, cancel behavior, invalid pattern/listener. | Partial | Service+group pattern matching, matched service-key return, add event callback, and cancel-stop behavior are covered. Delete-service event callback remains because public instance deregistration does not reliably produce a `DELETE_SERVICE` fuzzy-watch event and the Java SDK has no public service delete API. Null watcher is already a no-op in the Naming SDK path and invalid pattern is covered by SDK-side pattern generation. |
 | `getServicesOfServer` overloads | Pagination, default group, explicit group, selector overload, empty pages, and invalid page boundary. | Covered | Default and explicit group pages containing registered services, deprecated selector overloads, empty second page, and current `pageNo=0` first-page normalization are covered. |
 
+### Naming notification origin (#15902)
+
+| Scenario | Expected behavior | Coverage |
+| --- | --- | --- |
+| Subscribe to an existing service without a local cache | Current instances are delivered; the first callback may come from the subscription response or a competing push. | `testCacheReplayAndServerPushNotificationOrigins`; deterministic response/push orderings in `ServiceInfoHolderTest`. |
+| Add a second listener to an existing subscription | The new listener receives cache replay with `isFromServer() == false`; the existing listener receives no extra replay. | `testCacheReplayAndServerPushNotificationOrigins`. |
+| Change instance weight after subscription | Both listeners receive `true` with the updated instance view. | `testCacheReplayAndServerPushNotificationOrigins`, with fallback polling explicitly disabled. |
+| Unsubscribe and resubscribe one listener while another remains | Cache replay is `false`, retains current data, and does not notify the other listener. | `testCacheReplayAndServerPushNotificationOrigins`. |
+| Subscription response versus push, unchanged data, selector and multi-listener delivery | The actual producer's flag survives conversion; equal views do not add callbacks; diffs and filtering are unchanged. | Deterministic client unit tests; standalone IT cannot force response/push ordering. |
+| Legacy constructors, polling and failover | Default/non-push paths remain `false`; this does not imply unchanged data. | API/client unit tests. |
+
 ## AiService And A2aService
 
 | Public SDK surface | Required scenarios | Current status | Current / missing coverage |

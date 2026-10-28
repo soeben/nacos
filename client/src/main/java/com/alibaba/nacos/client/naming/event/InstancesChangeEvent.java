@@ -43,14 +43,42 @@ public class InstancesChangeEvent extends Event {
     
     private InstancesDiff instancesDiff;
     
+    private final boolean fromServer;
+    
     public InstancesChangeEvent(String eventScope, String serviceName, String groupName,
         String clusters, List<Instance> hosts, InstancesDiff diff) {
+        this(eventScope, serviceName, groupName, clusters, hosts, diff, false);
+    }
+    
+    /**
+     * Create an instance change event with its notification origin.
+     *
+     * @param eventScope event scope
+     * @param serviceName service name
+     * @param groupName group name
+     * @param clusters subscribed clusters
+     * @param hosts current instances
+     * @param diff instance changes
+     * @param fromServer whether this notification was triggered by a server push
+     */
+    public InstancesChangeEvent(String eventScope, String serviceName, String groupName,
+        String clusters, List<Instance> hosts, InstancesDiff diff, boolean fromServer) {
         this.eventScope = eventScope;
         this.serviceName = serviceName;
         this.groupName = groupName;
         this.clusters = clusters;
         this.hosts = hosts;
         this.instancesDiff = diff;
+        this.fromServer = fromServer;
+    }
+    
+    /**
+     * Whether this notification was triggered by a server push.
+     *
+     * @return {@code true} for a server-push notification
+     */
+    public boolean isFromServer() {
+        return fromServer;
     }
     
     public String getServiceName() {

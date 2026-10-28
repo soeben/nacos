@@ -73,6 +73,37 @@ Server push fan-out and retry work must follow the
 [Runtime Push And Reconnect Spec](../client/runtime-push-reconnect-spec.md) and
 the [Task Execution Spec](../design/foundation-task-execution-spec.md).
 
+### 3.1 Java SDK Notification Origin
+
+`NamingEvent.isFromServer()` is read-only metadata inherited by `NamingChangeEvent`.
+It identifies the notification path, not the original source of the instance data
+or whether this is a listener's first callback.
+
+| Notification path | `isFromServer()` |
+| --- | --- |
+| Server push handled as `NotifySubscriberRequest`, including pushes after reconnect | `true` |
+| Synchronous subscription response processed by the client | `false` |
+| Existing cache replayed directly to a newly registered local listener | `false` |
+| Background polling/query refresh | `false` |
+| Failover data changes or switching back to the normal cached view | `false` |
+| Events built with legacy constructors | `false` |
+
+The flag belongs to each event, not to cached `ServiceInfo` or a listener's lifecycle.
+Selector filtering must preserve it. Cache replay targets only the new listener;
+a subscription response that produces a diff may notify existing listeners too.
+Reconnect does not reset any first-callback state; events follow their actual paths.
+
+Subscription responses and subscription-triggered pushes can race. The flag describes
+the update that actually produced a notification; it does not guarantee a callback of
+either value for every subscription. Empty views, unchanged views, selector filtering,
+and push-empty protection retain their existing notification behavior.
+
+Either value may contain changes not yet handled by the application. `false` does not
+mean unchanged, local-only data, or safe to ignore; `true` does not prove a new instance
+mutation. Applications must coordinate initial reads and callbacks with their own
+processed state. This metadata does not change callback conditions, diff contents,
+delivery ordering, or server protocols.
+
 ## 4. Fuzzy Watch
 
 Fuzzy watch allows a client to watch service keys by `serviceName` and

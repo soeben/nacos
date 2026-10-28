@@ -66,6 +66,32 @@ HTTP Open API 不支持长轮询或推送订阅。自定义 HTTP 客户端应显
 [运行时推送与重连规范](../client/runtime-push-reconnect-spec.md)和
 [任务执行规范](../design/foundation-task-execution-spec.md)。
 
+### 3.1 Java SDK 通知来源
+
+`NamingEvent.isFromServer()` 是只读元数据，由 `NamingChangeEvent` 继承。
+它表示通知的产生路径，不表示实例数据的原始来源，也不表示 listener 的首次回调。
+
+| 通知路径 | `isFromServer()` |
+| --- | --- |
+| 通过 `NotifySubscriberRequest` 接收的服务端主动推送，包括重连后的推送 | `true` |
+| 客户端处理订阅请求的同步响应 | `false` |
+| 向新注册的本地 listener 直接重放已有缓存 | `false` |
+| 后台轮询／查询刷新 | `false` |
+| Failover 数据变化或切回正常缓存视图 | `false` |
+| 使用旧构造器创建的事件 | `false` |
+
+标记属于每个事件，不存入 `ServiceInfo` 缓存，也不绑定 listener 生命周期。Selector 过滤必须
+保留标记。缓存重放只通知新 listener；订阅响应产生 diff 时，也可能通知已有 listener。
+重连不重置任何首次回调状态；实际交付的通知按照其产生路径取值。
+
+订阅响应与订阅触发的服务端推送可能竞争。标记描述实际产生通知的那次更新，不保证每次订阅
+都收到某一取值的回调。空视图、无变化视图、selector 过滤和 push-empty protection 均保持
+原有通知行为。
+
+两种取值都可能包含应用尚未处理的变化。`false` 不表示数据未变、数据仅来自本地或事件可以
+忽略；`true` 也不证明发生了新的实例变更。应用必须结合自身已处理状态协调初始化查询和回调。
+该元数据不改变回调条件、diff 内容、交付顺序或服务端协议。
+
 ## 4. 模糊订阅
 
 模糊订阅允许客户端在一个 namespace 内通过 `serviceName` 和 `groupName` pattern 订阅 service key。

@@ -177,6 +177,15 @@ SDK instead of `ConfigService`.
 The selector overload of `getServicesOfServer` is deprecated and remains only as
 a compatibility surface.
 
+Naming listener events expose the read-only `NamingEvent.isFromServer()` flag, also
+inherited by `NamingChangeEvent`. Only server-push notifications return `true`;
+subscription responses, cache replay, polling and failover notifications return `false`.
+Existing constructors remain available and default to `false`; new overloads carry
+the flag through the event pipeline and selector conversion. The flag is per-event,
+not a first-callback marker or a guarantee that an event can be skipped. Full boundary
+and reconnect rules are defined in the
+[Naming Discovery And Subscription Spec](../naming/naming-discovery-subscription-spec.md).
+
 ### 5.3 AiService Resource Interfaces
 
 The root interface also provides default `getAgentDiscoveryCapability() throws NacosException`,

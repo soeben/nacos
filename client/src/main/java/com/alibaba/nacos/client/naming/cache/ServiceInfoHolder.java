@@ -127,6 +127,17 @@ public class ServiceInfoHolder implements Closeable {
      * @return service info
      */
     public ServiceInfo processServiceInfo(ServiceInfo serviceInfo) {
+        return processServiceInfo(serviceInfo, false);
+    }
+    
+    /**
+     * Process service info with its notification origin.
+     *
+     * @param serviceInfo new service info
+     * @param fromServer whether this update was received through a server push
+     * @return service info
+     */
+    public ServiceInfo processServiceInfo(ServiceInfo serviceInfo, boolean fromServer) {
         String serviceKey = serviceInfo.getKeyWithoutClusters();
         if (serviceKey == null) {
             NAMING_LOGGER.warn("process service info but serviceKey is null, service host: {}",
@@ -165,7 +176,7 @@ public class ServiceInfoHolder implements Closeable {
                 NotifyCenter.publishEvent(
                     new InstancesChangeEvent(notifierEventScope, serviceInfo.getName(),
                         serviceInfo.getGroupName(),
-                        serviceInfo.getClusters(), serviceInfo.getHosts(), diff));
+                        serviceInfo.getClusters(), serviceInfo.getHosts(), diff, fromServer));
             }
             publishDiskCacheRefreshEvent(serviceKey, serviceInfo);
         }
