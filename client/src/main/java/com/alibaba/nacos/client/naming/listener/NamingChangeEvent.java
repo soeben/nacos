@@ -40,7 +40,22 @@ public class NamingChangeEvent extends NamingEvent {
     public NamingChangeEvent(String serviceName, String groupName, String clusters,
         List<Instance> instances,
         InstancesDiff instancesDiff) {
-        super(serviceName, groupName, clusters, instances);
+        this(serviceName, groupName, clusters, instances, instancesDiff, false);
+    }
+    
+    /**
+     * Create a change event with its push notification flag.
+     *
+     * @param serviceName service name
+     * @param groupName group name
+     * @param clusters subscribed clusters
+     * @param instances current instances
+     * @param instancesDiff instance changes
+     * @param fromPush whether triggered by server push, background query or failover
+     */
+    public NamingChangeEvent(String serviceName, String groupName, String clusters,
+        List<Instance> instances, InstancesDiff instancesDiff, boolean fromPush) {
+        super(serviceName, groupName, clusters, instances, fromPush);
         this.instancesDiff = instancesDiff;
     }
     

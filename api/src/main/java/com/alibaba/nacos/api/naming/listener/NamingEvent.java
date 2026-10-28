@@ -35,17 +35,50 @@ public class NamingEvent implements Event {
     
     private List<Instance> instances;
     
+    private final boolean fromPush;
+    
     public NamingEvent(String serviceName, List<Instance> instances) {
-        this.serviceName = serviceName;
-        this.instances = instances;
+        this(serviceName, null, null, instances);
     }
     
     public NamingEvent(String serviceName, String groupName, String clusters,
         List<Instance> instances) {
+        this(serviceName, groupName, clusters, instances, false);
+    }
+    
+    /**
+     * Create an event with its push notification flag.
+     *
+     * @param serviceName service name
+     * @param groupName group name
+     * @param clusters subscribed clusters
+     * @param instances current instances
+     * @param fromPush whether triggered by server push, background query or failover
+     */
+    public NamingEvent(String serviceName, String groupName, String clusters,
+        List<Instance> instances, boolean fromPush) {
         this.serviceName = serviceName;
         this.groupName = groupName;
         this.clusters = clusters;
         this.instances = instances;
+        this.fromPush = fromPush;
+    }
+    
+    /**
+     * Whether this event was triggered by server push, background query or failover.
+     *
+     * <p>Background queries include polling. Failover includes data changes and recovery to
+     * the normal cached view, even when the notification is produced locally.
+     *
+     * <p>Subscription responses, direct cache replay and events created with legacy constructors
+     * return {@code false}. This flag describes the notification path, not the original data source
+     * or the listener's first callback. Either value may carry changes not yet processed by the
+     * application.
+     *
+     * @return {@code true} for server push, background query or failover
+     */
+    public boolean isFromPush() {
+        return fromPush;
     }
     
     public String getServiceName() {

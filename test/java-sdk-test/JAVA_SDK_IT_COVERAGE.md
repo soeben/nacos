@@ -38,6 +38,25 @@ HTTP API IT CI and should build this module without executing SDK IT cases.
 Destructive restart and cluster cases run through
 [`../DEFAULT_AUTH_RELIABILITY_IT.md`](../DEFAULT_AUTH_RELIABILITY_IT.md).
 
+## Naming push notification flag (#15902)
+
+The `NamingService` listener contract includes read-only `NamingEvent.isFromPush()`
+metadata inherited by `NamingChangeEvent`. `NamingServiceJavaSdkITCase`
+`testCacheReplayAndPushNotificationFlags` covers an existing service's initial
+view, cache replay to a second listener without replaying to the first, server-push
+weight updates delivered to both listeners, and unsubscribe/resubscribe cache replay.
+Polling and startup disk-cache loading are disabled explicitly to isolate server pushes.
+
+Subscription-response/push ordering is covered deterministically in client unit tests,
+because either can win the initial diff in standalone IT. API/client tests also cover
+legacy defaults, selector propagation, and unchanged-view suppression. Background
+queries and failover changes/recovery also carry `isFromPush() == true`, while
+subscription responses and direct cache replay carry `false`. Deterministic client
+tests cover polling with and without a cached view, and failover activation, data
+changes, and recovery. Standalone IT cannot reliably isolate polling from competing
+server pushes or trigger an isolated failover source through the public SDK API.
+The scenario matrix is in `JAVA_SDK_IT_SCENARIOS.md`; no HTTP API or wire contract changes.
+
 ## Card-level A2A security requirements (#15975, item 1)
 
 Card-level A2A security requirements (#15975, item 1) are covered by
